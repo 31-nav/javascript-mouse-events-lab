@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="An interactive lab demonstrating JavaScript mouse event handling.">
+  <title>Mouse Events Lab | JavaScript Event Handling</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #192b3a;
+      --muted: #687986;
+      --paper: #f3f6f4;
+      --card: #ffffff;
+      --line: #e4ebe8;
+      --teal: #0e766e;
+      --teal-dark: #095d57;
+      --mint: #dff5ed;
+      --lime: #d9f278;
+      --violet: #eee9ff;
+      --shadow: 0 18px 50px rgba(28, 55, 63, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 2%, rgba(217, 242, 120, 0.28), transparent 22rem),
+        radial-gradient(circle at 94% 12%, rgba(172, 224, 211, 0.28), transparent 24rem),
+        var(--paper);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+
+    button { font: inherit; }
+    .page-shell { width: min(1080px, calc(100% - 40px)); margin: 0 auto; padding: 54px 0 34px; }
+
+    .topline {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+
+    .brand { display: flex; align-items: center; gap: 11px; font-size: 14px; font-weight: 760; letter-spacing: -0.02em; }
+    .brand-mark {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border-radius: 11px;
+      color: #fff;
+      background: var(--teal);
+      box-shadow: 0 6px 14px rgba(14, 118, 110, 0.22);
+    }
+    .lab-label { color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+
+    .hero { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 24px; margin-bottom: 30px; }
+    .eyebrow { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; color: var(--teal); font-size: 12px; font-weight: 800; letter-spacing: 0.11em; text-transform: uppercase; }
+    .eyebrow::before { width: 22px; height: 2px; content: ""; background: var(--teal); }
+    h1 { max-width: 650px; margin: 0; font-size: clamp(38px, 6vw, 66px); line-height: 0.99; letter-spacing: -0.065em; }
+    .hero-copy { max-width: 610px; margin: 17px 0 0; color: var(--muted); font-size: 16px; }
+    .hero-note { max-width: 185px; padding: 14px 16px; border: 1px solid rgba(14, 118, 110, 0.12); border-radius: 15px; color: var(--teal-dark); background: rgba(255, 255, 255, 0.64); font-size: 12px; font-weight: 650; }
+    .hero-note strong { display: block; margin-bottom: 3px; color: var(--ink); font-size: 13px; }
+
+    .workspace { overflow: hidden; border: 1px solid rgba(215, 227, 223, 0.9); border-radius: 24px; background: rgba(255, 255, 255, 0.84); box-shadow: var(--shadow); }
+    .workspace-head { display: flex; justify-content: space-between; align-items: center; gap: 18px; padding: 19px 24px; border-bottom: 1px solid var(--line); }
+    .workspace-title { display: flex; align-items: center; gap: 11px; font-size: 14px; font-weight: 760; }
+    .pulse { width: 9px; height: 9px; border-radius: 50%; background: #54b995; box-shadow: 0 0 0 4px #e6f7ef; }
+    .workspace-meta { color: var(--muted); font-size: 12px; }
+    .workspace-meta strong { color: var(--ink); }
+
+    .event-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 15px; padding: 18px; }
+    .event-card { min-width: 0; padding: 20px; border: 1px solid var(--line); border-radius: 18px; background: var(--card); transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease; }
+    .event-card:hover { border-color: #c9ded8; box-shadow: 0 8px 24px rgba(28, 55, 63, 0.05); transform: translateY(-1px); }
+    .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 15px; }
+    .card-heading { display: flex; align-items: center; gap: 11px; }
+    .number { display: grid; width: 34px; height: 34px; flex: 0 0 34px; place-items: center; border-radius: 11px; color: var(--teal-dark); background: var(--mint); font-size: 12px; font-weight: 800; }
+    .event-card:nth-child(2) .number { color: #6250a5; background: var(--violet); }
+    .event-card:nth-child(3) .number { color: #785824; background: #fff3d8; }
+    .event-card:nth-child(4) .number { color: #3e6b3d; background: #e9f4dd; }
+    h2 { margin: 0; font-size: 16px; letter-spacing: -0.025em; }
+    .event-chip { padding: 5px 8px; border: 1px solid var(--line); border-radius: 8px; color: #52646e; background: #fbfcfb; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 11px; white-space: nowrap; }
+    .card-copy { min-height: 40px; margin: -4px 0 14px; color: var(--muted); font-size: 13px; }
+
+    .hover-zone, .move-pad, .double-target { display: grid; min-height: 124px; place-items: center; padding: 18px; border: 1px dashed #bdd5cd; border-radius: 14px; text-align: center; background: #f4faf7; transition: color 180ms ease, background 180ms ease, border-color 180ms ease, transform 180ms ease; }
+    .hover-zone { cursor: pointer; }
+    .hover-zone.is-over { color: #fff; border-color: var(--teal); background: var(--teal); }
+    .zone-title { display: block; font-size: 14px; font-weight: 760; }
+    .zone-hint { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; }
+    .hover-zone.is-over .zone-hint { color: rgba(255, 255, 255, 0.78); }
+    .move-pad { position: relative; overflow: hidden; cursor: crosshair; background-color: #f8f6ff; border-color: #d7cff4; }
+    .move-pad::before, .move-pad::after { position: absolute; content: ""; pointer-events: none; background: rgba(111, 91, 179, 0.08); }
+    .move-pad::before { width: 1px; height: 100%; }
+    .move-pad::after { width: 100%; height: 1px; }
+    .move-content { z-index: 1; padding: 8px 12px; border-radius: 10px; background: rgba(248, 246, 255, 0.88); }
+    .coords { display: block; margin-top: 5px; color: #6250a5; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; font-weight: 700; }
+
+    .click-row { display: flex; min-height: 124px; align-items: center; justify-content: space-between; gap: 18px; padding: 18px; border-radius: 14px; background: #fffaf0; }
+    .click-copy { color: var(--muted); font-size: 12px; }
+    .click-copy strong { display: block; margin-bottom: 3px; color: var(--ink); font-size: 14px; }
+    .action-button { min-height: 42px; padding: 0 15px; border: 0; border-radius: 11px; color: #fff; background: #a36a11; font-size: 13px; font-weight: 750; cursor: pointer; box-shadow: 0 5px 12px rgba(163, 106, 17, 0.18); transition: background 160ms ease, transform 160ms ease; }
+    .action-button:hover { background: #80530d; transform: translateY(-1px); }
+    .action-button:active { transform: translateY(0); }
+
+    .double-target { width: 100%; min-height: 124px; color: var(--ink); cursor: pointer; background: #f5faef; border-color: #c9ddbc; }
+    .double-target.is-active { color: #fff; background: #5b873f; border-color: #5b873f; transform: scale(0.99); }
+    .double-target .zone-hint { color: var(--muted); }
+    .double-target.is-active .zone-hint { color: rgba(255, 255, 255, 0.78); }
+
+    .workspace-foot { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 14px 24px; border-top: 1px solid var(--line); background: #fbfcfb; }
+    .last-event { overflow: hidden; color: var(--muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+    .last-event strong { color: var(--teal-dark); }
+    .reset-button { padding: 7px 10px; border: 1px solid var(--line); border-radius: 9px; color: #52646e; background: #fff; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .reset-button:hover { border-color: #b8cbc5; color: var(--ink); }
+    button:focus-visible, [tabindex="0"]:focus-visible { outline: 3px solid rgba(14, 118, 110, 0.35); outline-offset: 3px; }
+    .footer { display: flex; justify-content: space-between; gap: 18px; margin-top: 17px; color: var(--muted); font-size: 11px; }
+    .footer strong { color: #52646e; }
+
+    @media (max-width: 700px) {
+      .page-shell { width: min(100% - 28px, 540px); padding-top: 28px; }
+      .hero { grid-template-columns: 1fr; align-items: start; gap: 16px; }
+      .hero-note { max-width: none; }
+      .event-grid { grid-template-columns: 1fr; padding: 12px; }
+      .workspace-head { align-items: flex-start; padding: 16px; }
+      .workspace-meta { text-align: right; }
+      .workspace-foot { padding: 13px 16px; }
+      .footer { flex-direction: column; gap: 4px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page-shell">
+    <div class="topline">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">↗</span> Web Interaction Lab</div>
+      <div class="lab-label">HTML5 · CSS3 · JavaScript</div>
+    </div>
+
+    <header class="hero">
+      <div>
+        <p class="eyebrow">JavaScript event handling</p>
+        <h1>Make the mouse<br>do something.</h1>
+        <p class="hero-copy">Explore four mouse events by interacting with the cards below. Each activity gives immediate feedback when its event is triggered.</p>
+      </div>
+      <aside class="hero-note"><strong>Lab aim</strong>Demonstrate mouse movement and button events with clear, interactive messages.</aside>
+    </header>
+
+    <section class="workspace" aria-label="Interactive mouse event demonstrations">
+      <div class="workspace-head">
+        <div class="workspace-title"><span class="pulse" aria-hidden="true"></span> Try the interactions</div>
+        <div class="workspace-meta">Events detected: <strong id="event-total">0</strong></div>
+      </div>
+
+      <div class="event-grid">
+        <article class="event-card">
+          <div class="card-head">
+            <div class="card-heading"><span class="number">01</span><h2>Hover to enter</h2></div>
+            <code class="event-chip">onmouseover</code>
+          </div>
+          <p class="card-copy">Move your pointer onto the panel to trigger a hover response.</p>
+          <div class="hover-zone" id="hover-zone">
+            <div><span class="zone-title" id="hover-title">Move your pointer here</span><span class="zone-hint" id="hover-hint">The panel will respond to your mouse.</span></div>
+          </div>
+        </article>
+
+        <article class="event-card">
+          <div class="card-head">
+            <div class="card-heading"><span class="number">02</span><h2>Track your movement</h2></div>
+            <code class="event-chip">onmousemove</code>
+          </div>
+          <p class="card-copy">Move inside the tracking area and watch the local coordinates update.</p>
+          <div class="move-pad" id="move-pad">
+            <div class="move-content"><span class="zone-title">Move inside this area</span><span class="coords" id="coordinates">x: — &nbsp; y: —</span></div>
+          </div>
+        </article>
+
+        <article class="event-card">
+          <div class="card-head">
+            <div class="card-heading"><span class="number">03</span><h2>Press the button</h2></div>
+            <code class="event-chip">onclick</code>
+          </div>
+          <p class="card-copy">Click the button and see the counter increase.</p>
+          <div class="click-row">
+            <div class="click-copy"><strong id="click-message">Ready when you are</strong><span id="click-count">Button clicks: 0</span></div>
+            <button class="action-button" id="click-button" type="button">Click me</button>
+          </div>
+        </article>
+
+        <article class="event-card">
+          <div class="card-head">
+            <div class="card-heading"><span class="number">04</span><h2>Double-click to change</h2></div>
+            <code class="event-chip">ondblclick</code>
+          </div>
+          <p class="card-copy">Double-click the panel to toggle its color and message.</p>
+          <button class="double-target" id="double-target" type="button">
+            <span><span class="zone-title" id="double-title">Double-click this panel</span><span class="zone-hint" id="double-hint">It will switch to its active state.</span></span>
+          </button>
+        </article>
+      </div>
+
+      <div class="workspace-foot">
+        <div class="last-event" id="last-event" role="status">Last event: <strong>Waiting for an interaction</strong></div>
+        <button class="reset-button" id="reset-button" type="button">Reset demo</button>
+      </div>
+    </section>
+
+    <footer class="footer"><span><strong>How to use:</strong> hover, move, click, and double-click the activity panels.</span><span>Single file · No libraries required</span></footer>
+  </main>
+
+  <script>
+    // Select the page elements used by the event handlers.
+    const hoverZone = document.getElementById("hover-zone");
+    const movePad = document.getElementById("move-pad");
+    const clickButton = document.getElementById("click-button");
+    const doubleTarget = document.getElementById("double-target");
+    const resetButton = document.getElementById("reset-button");
+    const eventTotal = document.getElementById("event-total");
+    const lastEvent = document.getElementById("last-event");
+
+    let totalEvents = 0;
+    let clickCount = 0;
+    let isDoubleTargetActive = false;
+
+    function recordEvent(eventName, message) {
+      totalEvents += 1;
+      eventTotal.textContent = totalEvents;
+      lastEvent.innerHTML = "Last event: <strong></strong>";
+      lastEvent.querySelector("strong").textContent = eventName + " — " + message;
+    }
+
+    // onmouseover: respond when the pointer enters the hover panel.
+    hoverZone.onmouseover = function (event) {
+      if (hoverZone.contains(event.relatedTarget)) return;
+      hoverZone.classList.add("is-over");
+      document.getElementById("hover-title").textContent = "You hovered over the panel!";
+      document.getElementById("hover-hint").textContent = "The onmouseover event fired.";
+      recordEvent("onmouseover", "The pointer entered the hover panel.");
+    };
+
+    // onmouseout resets the panel's appearance after the pointer leaves.
+    hoverZone.onmouseout = function (event) {
+      if (hoverZone.contains(event.relatedTarget)) return;
+      hoverZone.classList.remove("is-over");
+      document.getElementById("hover-title").textContent = "Move your pointer here";
+      document.getElementById("hover-hint").textContent = "The panel will respond to your mouse.";
+    };
+
+    // onmousemove: show the pointer's position relative to the tracking panel.
+    movePad.onmousemove = function (event) {
+      const bounds = movePad.getBoundingClientRect();
+      const x = Math.round(event.clientX - bounds.left);
+      const y = Math.round(event.clientY - bounds.top);
+      document.getElementById("coordinates").textContent = "x: " + x + " px   y: " + y + " px";
+      recordEvent("onmousemove", "Pointer position is x: " + x + ", y: " + y + ".");
+    };
+
+    // onclick: count each click and display a confirmation message.
+    clickButton.onclick = function () {
+      clickCount += 1;
+      document.getElementById("click-count").textContent = "Button clicks: " + clickCount;
+      document.getElementById("click-message").textContent = "Nice click!";
+      recordEvent("onclick", "The button was clicked " + clickCount + (clickCount === 1 ? " time." : " times."));
+    };
+
+    // ondblclick: toggle the panel's active color and message.
+    doubleTarget.ondblclick = function () {
+      isDoubleTargetActive = !isDoubleTargetActive;
+      doubleTarget.classList.toggle("is-active", isDoubleTargetActive);
+      document.getElementById("double-title").textContent = isDoubleTargetActive ? "Double-click detected!" : "Double-click this panel";
+      document.getElementById("double-hint").textContent = isDoubleTargetActive ? "The ondblclick event changed this panel." : "It will switch to its active state.";
+      recordEvent("ondblclick", isDoubleTargetActive ? "The panel is active." : "The panel returned to its original state.");
+    };
+
+    // Reset button: return every demonstration to its starting state.
+    resetButton.onclick = function () {
+      totalEvents = 0;
+      clickCount = 0;
+      isDoubleTargetActive = false;
+      eventTotal.textContent = "0";
+      lastEvent.innerHTML = "Last event: <strong>Waiting for an interaction</strong>";
+      document.getElementById("coordinates").textContent = "x: —   y: —";
+      document.getElementById("click-count").textContent = "Button clicks: 0";
+      document.getElementById("click-message").textContent = "Ready when you are";
+      document.getElementById("double-title").textContent = "Double-click this panel";
+      document.getElementById("double-hint").textContent = "It will switch to its active state.";
+      doubleTarget.classList.remove("is-active");
+      hoverZone.classList.remove("is-over");
+      document.getElementById("hover-title").textContent = "Move your pointer here";
+      document.getElementById("hover-hint").textContent = "The panel will respond to your mouse.";
+    };
+  </script>
+</body>
+</html>
